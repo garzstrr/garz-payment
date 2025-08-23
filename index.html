@@ -5,208 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ Garz All Payment ⚡</title>
   <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: "Courier New", monospace;
       background: #000;
       color: #00ff99;
       text-align: center;
       padding: 30px;
-      overflow: hidden;
+      overflow-x: hidden; /* biar bisa scroll ke bawah */
     }
 
-    /* 🌌 Matrix Rain */
+    html { scroll-behavior: smooth; }
+
+    /* Canvas matrix background */
     canvas {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       z-index: -3;
-      width: 100%;
-      height: 100%;
-      background: black;
     }
 
-    /* ✨ ASCII Header */
-    pre.ascii {
-      color: #00ff99;
-      font-size: 12px;
-      line-height: 1.1;
-      text-shadow: 0 0 12px #00ff99;
-      margin-bottom: 10px;
-      animation: flicker 2s infinite alternate;
-    }
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.6; }
+    /* Container utama */
+    .container {
+      max-width: 500px;
+      margin: auto;
     }
 
-    /* 🔮 Efek Glitch */
     h1 {
-      font-size: 2.2rem;
+      font-size: 28px;
       margin-bottom: 25px;
-      color: #00ff99;
-      text-shadow: 0 0 8px #00ff99, 0 0 20px #00ffaa, 0 0 30px #00ff99;
-      position: relative;
-      animation: glitch 2s infinite;
-    }
-    @keyframes glitch {
-      0% { text-shadow: 2px 0 red, -2px 0 blue; }
-      20% { text-shadow: -2px 0 lime, 2px 0 cyan; }
-      40% { text-shadow: 2px 2px magenta, -2px -2px lime; }
-      60% { text-shadow: 0 0 8px #00ff99, 0 0 20px #00ffaa; }
-      100% { text-shadow: -2px 0 red, 2px 0 blue; }
+      text-shadow: 0 0 15px #00ff99, 0 0 30px #00ffcc;
     }
 
-    /* 🟩 Card Payment */
-    .payment {
-      background: rgba(0, 20, 0, 0.85);
+    /* Kotak style neon */
+    .box {
       border: 2px solid #00ff99;
-      border-radius: 15px;
+      border-radius: 12px;
       padding: 20px;
-      margin: 20px auto;
-      width: 330px;
-      box-shadow: 0 0 25px rgba(0,255,150,0.5);
+      margin: 20px 0;
+      box-shadow: 0 0 20px #00ff99;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Tombol payment */
+    .payment-option {
+      display: flex;
+      align-items: center;      /* rata vertikal */
+      justify-content: center;  /* rata horizontal */
+      gap: 10px;                /* jarak ikon-teks */
+      background: #00ff99;
+      color: #000;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      cursor: pointer;
       transition: 0.3s;
     }
-    .payment:hover {
-      transform: translateY(-6px) scale(1.05);
-      box-shadow: 0 0 35px rgba(0,255,150,0.9), 0 0 60px rgba(0,255,150,0.6);
+
+    .payment-option:hover {
+      background: #00cc77;
+      transform: scale(1.05);
     }
-    .payment h2 {
-      margin-bottom: 10px;
-      color: #00ffcc;
-      text-shadow: 0 0 12px #00ffaa;
-    }
-    .logo {
-      width: 75px;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 15px #00ff99);
-    }
+
+    /* Info & footer */
     p {
-      margin-bottom: 12px;
-      font-size: 1rem;
-      color: #aaffdd;
-    }
-
-    /* 🟩 Tombol */
-    .btn {
-      display: inline-block;
-      background: linear-gradient(45deg, #00ff99, #006633);
-      color: black;
-      padding: 10px 20px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: bold;
-      margin-top: 10px;
-      box-shadow: 0 0 15px rgba(0,255,150,0.9);
-      transition: 0.25s;
-    }
-    .btn:hover {
-      background: linear-gradient(45deg, #006633, #00ff99);
-      color: #000;
-      box-shadow: 0 0 25px rgba(0,255,150,1);
-    }
-
-    .copy-btn {
-      background: #111;
-      border: 1px solid #00ff99;
-      color: #00ff99;
-      margin-left: 8px;
-      padding: 5px 12px;
-      font-size: 0.85rem;
-      box-shadow: 0 0 10px #00ff99;
-    }
-    .copy-btn:hover {
-      background: #00ff99;
-      color: #000;
-      box-shadow: 0 0 20px #00ff99;
-    }
-
-    /* 🔔 Toast Notification */
-    .toast {
-      position: fixed;
-      bottom: -60px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #00ff99;
-      color: black;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: bold;
-      box-shadow: 0 0 20px #00ff99;
-      opacity: 0;
-      transition: all 0.4s ease;
-      z-index: 9999;
-    }
-    .toast.show {
-      bottom: 35px;
-      opacity: 1;
+      margin: 10px 0;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <!-- 🌌 Canvas Matrix Rain -->
   <canvas id="matrix"></canvas>
 
-  <!-- ASCII Header -->
-  <pre class="ascii">
-   ██████╗  █████╗ ██████╗ ███████╗
-  ██╔════╝ ██╔══██╗██╔══██╗██╔════╝
-  ██║  ███╗███████║██████╔╝█████╗  
-  ██║   ██║██╔══██║██╔═══╝ ██╔══╝  
-  ╚██████╔╝██║  ██║██║     ███████╗
-   ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚══════╝
-  </pre>
+  <div class="container">
+    <h1>⚡ Garz All Payment ⚡</h1>
 
-  <h1>⚡ Garz All Payment ⚡</h1>
+    <div class="box">
+      <div class="payment-option">💰 DANA</div>
+      <div class="payment-option">📱 OVO</div>
+      <div class="payment-option">⚡ GOPAY</div>
+      <div class="payment-option">🔗 QRIS</div>
+    </div>
 
-  <div class="payment">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6a/Dana_logo.png" alt="DANA" class="logo">
-    <h2>DANA</h2>
-    <p>Nomor: <b id="dana">0895402128077</b>
-      <button class="btn copy-btn" onclick="copyText('dana')">Copy</button>
-    </p>
-    <a href="https://link.dana.id/minta" target="_blank" class="btn">Bayar via DANA</a>
+    <div class="box">
+      <p>Website ini mendukung semua metode pembayaran digital populer.<br>
+      Scroll ke bawah untuk info lebih lanjut.</p>
+    </div>
+
+    <div class="box">
+      <h2>Tentang Garz</h2>
+      <p>Garz All Payment adalah layanan all-in-one untuk mempermudah transaksi digital dengan cepat dan aman.</p>
+    </div>
   </div>
-
-  <div class="payment">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/63/Logo_OVO_purple.svg" alt="OVO" class="logo">
-    <h2>OVO</h2>
-    <p>Nomor: <b id="ovo">08234567890</b>
-      <button class="btn copy-btn" onclick="copyText('ovo')">Copy</button>
-    </p>
-    <a href="https://www.ovo.id/" target="_blank" class="btn">Bayar via OVO</a>
-  </div>
-
-  <div class="payment">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/GoPay_logo.svg" alt="GOPAY" class="logo">
-    <h2>GOPAY</h2>
-    <p>Nomor: <b id="gopay">08345678901</b>
-      <button class="btn copy-btn" onclick="copyText('gopay')">Copy</button>
-    </p>
-    <a href="https://www.gojek.com/gopay/" target="_blank" class="btn">Bayar via GOPAY</a>
-  </div>
-
-  <div class="payment">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/QRIS_logo.svg" alt="QRIS" class="logo">
-    <h2>QRIS</h2>
-    <p>Scan QR atau klik tombol di bawah</p>
-    <a href="https://linktr.ee/qris_kamu" target="_blank" class="btn">Bayar via QRIS</a>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast" class="toast">Nomor berhasil dicopy ✅</div>
-
-  <!-- 🎵 Efek Beep & Typing -->
-  <audio id="beep-sound">
-    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-  </audio>
-  <audio id="typing-sound" autoplay loop>
-    <source src="https://actions.google.com/sounds/v1/office/typewriter.ogg" type="audio/ogg">
-  </audio>
 
   <script>
-    // 🌌 Matrix Rain Effect
+    // Matrix effect
     const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
 
@@ -216,52 +113,35 @@
     const letters = "01";
     const fontSize = 14;
     const columns = canvas.width / fontSize;
-
     const drops = [];
+
     for (let x = 0; x < columns; x++) drops[x] = 1;
 
     function draw() {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = "#00ff99";
+      ctx.fillStyle = "#0f0";
       ctx.font = fontSize + "px monospace";
 
       for (let i = 0; i < drops.length; i++) {
         const text = letters[Math.floor(Math.random() * letters.length)];
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
           drops[i] = 0;
-        }
+
         drops[i]++;
       }
     }
-    setInterval(draw, 50);
 
-    // 🔔 Copy nomor + Beep
-    function copyText(id) {
-      var text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        playBeep();
-        showToast("Nomor " + text + " berhasil dicopy ✅");
-      });
-    }
+    setInterval(draw, 35);
 
-    function playBeep() {
-      var beep = document.getElementById("beep-sound");
-      beep.currentTime = 0;
-      beep.play();
-    }
-
-    function showToast(message) {
-      var toast = document.getElementById("toast");
-      toast.innerText = message;
-      toast.classList.add("show");
-      setTimeout(() => {
-        toast.classList.remove("show");
-      }, 2500);
-    }
+    // Resize responsive
+    window.addEventListener("resize", () => {
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+    });
   </script>
 </body>
 </html>
