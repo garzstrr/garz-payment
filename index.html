@@ -1,244 +1,364 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ Garz All Payment ⚡</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: "Courier New", monospace;
-      background: #000;
-      color: #00ff99;
-      text-align: center;
-      padding: 30px;
-      overflow-x: hidden;
-    }
-    html { scroll-behavior: smooth; }
-    canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: -3;
-    }
-    .container { max-width: 500px; margin: auto; }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 25px;
-      text-shadow: 0 0 15px #00ff99, 0 0 30px #00ffcc;
-    }
-    .box {
-      border: 2px solid #00ff99;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      box-shadow: 0 0 20px #00ff99;
-      background: rgba(0, 0, 0, 0.6);
-    }
-    .payment-option {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: #00ff99;
-      color: #000;
-      font-weight: bold;
-      font-size: 18px;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: 0.3s;
-      text-decoration: none;
-    }
-    .payment-option:hover {
-      background: #00cc77;
-      transform: scale(1.05);
-    }
-    .number { font-size: 14px; color: #000; }
-    .copy-btn {
-      padding: 5px 10px;
-      font-size: 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: #000;
-      color: #00ff99;
-    }
-    .copy-btn:hover { background: #222; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>⚡ Garz All Payment ⚡</title>
+<style>
+  :root{
+    --neon:#00ff99;
+    --neon-2:#00cc77;
+    --bg:#000;
+    --card: rgba(0,0,0,0.65);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--neon);
+    font-family:"Courier New", monospace;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+  }
 
-    /* Upload Bukti */
-    .upload-section {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .upload-section input {
-      padding: 8px;
-      border: 1px solid #00ff99;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background: #111;
-      color: #00ff99;
-    }
-    .upload-section button {
-      background: #00ff99;
-      color: #000;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-    .upload-section button:hover {
-      background: #00cc77;
-    }
-    .preview {
-      margin-top: 15px;
-    }
-    .preview img {
-      max-width: 250px;
-      border-radius: 10px;
-      border: 2px solid #00ff99;
-      box-shadow: 0 0 15px #00ff99;
-    }
+  .app{
+    width:100%;
+    max-width:920px;
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:18px;
+    align-items:start;
+  }
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr}
+  }
 
-    /* Modal QRIS */
-    #qris-modal {
-      display: none;
-      position: fixed; top:0; left:0;
-      width:100%; height:100%;
-      background: rgba(0,0,0,0.9);
-      justify-content:center;
-      align-items:center;
-      z-index:999;
-    }
-    #qris-modal img {
-      width: 250px;
-      border-radius: 8px;
-      box-shadow: 0 0 20px #00ff99;
-    }
-    #qris-modal button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #00ff99;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
+  header{grid-column:1/-1;text-align:center;margin-bottom:6px}
+  h1{margin:0 0 6px 0; font-size:26px; text-shadow:0 0 10px var(--neon)}
+  p.lead{margin:0;color:rgba(0,255,153,0.8);font-size:13px}
+
+  .card{
+    background:var(--card);
+    border:1px solid rgba(0,255,153,0.12);
+    padding:16px;
+    border-radius:12px;
+    box-shadow:0 8px 30px rgba(0,255,153,0.03);
+  }
+
+  /* left column: payments */
+  .payments{display:flex;flex-direction:column;gap:12px}
+  .pay{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:12px;border-radius:10px;
+    background: linear-gradient(90deg, rgba(0,255,153,0.06), rgba(0,255,153,0.03));
+    border:1px solid rgba(0,255,153,0.06);
+    transition:transform .12s ease, box-shadow .12s;
+  }
+  .pay:hover{transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,255,153,0.04)}
+  .method{display:flex;align-items:center;gap:12px}
+  .badge{
+    width:42px;height:42px;border-radius:8px;background:#001;display:flex;align-items:center;justify-content:center;color:var(--neon);
+    border:1px solid rgba(0,255,153,0.06); font-weight:800; box-shadow:0 0 8px rgba(0,255,153,0.08)
+  }
+  .num{font-weight:800;color:#000;background:var(--neon);padding:6px 10px;border-radius:8px}
+
+  .btn-ghost {
+    background:transparent;border:1px solid var(--neon);color:var(--neon);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;
+  }
+  .btn-ghost:hover{background:var(--neon);color:#000}
+
+  .qris-btn{background:transparent;border:2px dashed rgba(0,255,153,0.08);padding:10px;border-radius:10px;color:var(--neon);cursor:pointer}
+
+  /* right column: confirm form */
+  .form-row{display:flex;gap:10px;margin-bottom:8px}
+  .form-row .col{flex:1}
+  input[type="text"], input[type="number"]{
+    width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,255,153,0.08);background:#080808;color:var(--neon);outline:none;
+  }
+  input[type="file"]{color:var(--neon);background:transparent;border:none}
+  .submit{
+    width:100%;padding:12px;border-radius:10px;border:none;background:var(--neon);color:#000;font-weight:800;cursor:pointer;margin-top:8px;
+    box-shadow:0 8px 24px rgba(0,255,153,0.06);
+  }
+  .submit:hover{background:var(--neon-2)}
+
+  .preview{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+  .preview img{max-width:260px;border-radius:10px;border:2px solid rgba(0,255,153,0.12)}
+
+  footer{grid-column:1/-1;text-align:center;color:rgba(0,255,153,0.35);font-size:12px;margin-top:6px}
+
+  /* modal QRIS */
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:9999;padding:20px}
+  .modal-card{background:#000;padding:18px;border-radius:12px;border:3px solid rgba(0,255,153,0.12);text-align:center;animation:pop .28s ease}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-card img{max-width:86vw;max-height:86vh;border-radius:12px;border:4px solid var(--neon)}
+  .modal-close{margin-top:12px;padding:8px 14px;border-radius:10px;border:none;background:var(--neon);color:#000;font-weight:800;cursor:pointer}
+  .notif-toast{position:fixed;top:18px;right:18px;background:var(--neon);color:#000;padding:8px 12px;border-radius:8px;display:none;z-index:99999}
+  
+  /* matrix canvas */
+  canvas#matrix{position:fixed;inset:0;z-index:-2}
+</style>
 </head>
 <body>
-  <canvas id="matrix"></canvas>
+<canvas id="matrix"></canvas>
 
-  <div class="container">
+<div class="app">
+  <header>
     <h1>⚡ Garz All Payment ⚡</h1>
+    <p class="lead">Pilih metode, konfirmasi transfer, lalu kirim via WhatsApp. (Bukti gambar di-attach manual di WA)</p>
+  </header>
 
-    <div class="box">
-      <div class="payment-option">
-        💰 DANA 
-        <span class="number" id="dana-number">0895402128077</span>
-        <button class="copy-btn" onclick="copyNumber('dana-number')">Copy</button>
+  <!-- LEFT: payment list -->
+  <section class="card">
+    <div class="payments">
+      <div class="pay">
+        <div class="method">
+          <div class="badge">D</div>
+          <div>
+            <div style="font-weight:800">DANA</div>
+            <div style="font-size:13px;color:rgba(0,0,0,0.6)">Klik tombol untuk tampilkan nomor</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn-ghost" onclick="showMethod('dana')">Pilih</button>
+        </div>
       </div>
-      <div class="payment-option">
-        📱 OVO 
-        <span class="number" id="ovo-number">0882008336564</span>
-        <button class="copy-btn" onclick="copyNumber('ovo-number')">Copy</button>
+
+      <div class="pay">
+        <div class="method">
+          <div class="badge">O</div>
+          <div>
+            <div style="font-weight:800">OVO</div>
+            <div style="font-size:13px;color:rgba(0,0,0,0.6)">Klik tombol untuk tampilkan nomor</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn-ghost" onclick="showMethod('ovo')">Pilih</button>
+        </div>
       </div>
-      <div class="payment-option">
-        ⚡ GOPAY 
-        <span class="number" id="gopay-number">0895402128077</span>
-        <button class="copy-btn" onclick="copyNumber('gopay-number')">Copy</button>
+
+      <div class="pay">
+        <div class="method">
+          <div class="badge">G</div>
+          <div>
+            <div style="font-weight:800">GOPAY</div>
+            <div style="font-size:13px;color:rgba(0,0,0,0.6)">Klik tombol untuk tampilkan nomor</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn-ghost" onclick="showMethod('gopay')">Pilih</button>
+        </div>
       </div>
-      <div class="payment-option" onclick="showQRIS()">
-        🔗 QRIS (klik untuk lihat)
+
+      <div style="margin-top:6px;text-align:center">
+        <button class="qris-btn" onclick="openQris()">🔗 Lihat QRIS + Konfirmasi</button>
+        <div style="margin-top:8px;font-size:13px;color:rgba(0,255,153,0.35)">Klik QRIS untuk membuka form konfirmasi & unggah bukti</div>
       </div>
+
+      <!-- dynamic area for showing number -->
+      <div id="methodDisplay" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT: optional quick confirm + preview -->
+  <aside class="card">
+    <h3 style="margin-top:0">Konfirmasi Cepat</h3>
+    <div style="font-size:13px;color:rgba(0,255,153,0.55);margin-bottom:8px">Isi nama & nominal lalu kirim WA (bukti attach manual)</div>
+
+    <input id="quickNama" type="text" placeholder="Nama Pengirim">
+    <input id="quickNominal" type="number" placeholder="Nominal (Rp)">
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <input id="quickBukti" type="file" accept="image/*" style="flex:1" onchange="handleQuickPreview(event)">
     </div>
 
-    <!-- Upload Bukti Transfer -->
-    <div class="box upload-section">
-      <h2>Upload Bukti Transfer</h2>
-      <input type="file" id="bukti" accept="image/*" onchange="previewImage(event)"><br>
-      <div class="preview" id="preview"></div>
-      <button onclick="kirimWA()">Kirim via WhatsApp</button>
+    <div class="preview" id="quickPreviewBox"></div>
+
+    <button class="submit" onclick="sendQuickWA()">📤 Konfirmasi via WhatsApp</button>
+    <div style="margin-top:8px;font-size:12px;color:rgba(0,255,153,0.4)">Setelah WA terbuka, attach gambar bukti yang sudah dipilih lalu kirim.</div>
+  </aside>
+
+  <footer>Built with ❤️ — Garz Payment — ganti nomor & QRIS link sesuai kebutuhan</footer>
+</div>
+
+<!-- QRIS modal -->
+<div id="qrisModal" class="modal" onclick="closeQris()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <h2 style="color:var(--neon);margin-bottom:8px">Scan QRIS — Garz</h2>
+    <!-- ganti src ini dengan link QRIS kamu -->
+    <img id="qrisImg" src="https://files.catbox.moe/0gr906.jpg" alt="QRIS">
+    <div style="margin-top:12px">
+      <input id="nameQ" type="text" placeholder="Nama Anda">
+      <input id="nominalQ" type="number" placeholder="Nominal (Rp)">
+      <div style="margin-top:8px">
+        <input id="fileQ" type="file" accept="image/*" onchange="handleQrisPreview(event)">
+      </div>
+      <div class="preview" id="qrisPreviewBox"></div>
+      <button class="modal-close" onclick="confirmQris()">📤 Kirim Konfirmasi (Buka WA)</button>
+      <button class="modal-close" style="background:transparent;color:var(--neon);border:1px solid rgba(0,255,153,0.08);margin-left:8px" onclick="closeQris()">Batal</button>
     </div>
   </div>
+</div>
 
-  <!-- QRIS Modal -->
-  <div id="qris-modal">
-    <div style="text-align:center;">
-      <h3 style="color:#00ff99;">Scan QRIS</h3>
-      <img src="https://files.catbox.moe/0gr906.jpg" id="qris-img"/>
-      <br/>
-      <button onclick="hideQRIS()">Tutup</button>
-    </div>
-  </div>
+<div id="toast" class="notif-toast"></div>
 
-  <script>
-    // Copy Nomor
-    function copyNumber(id) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text);
-      alert("Nomor berhasil disalin: " + text);
+<script>
+/* -------------------------
+   Matrix effect
+   ------------------------- */
+(function matrix(){
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width = innerWidth;
+  let h = canvas.height = innerHeight;
+  const fontSize = Math.max(10, Math.floor(w/120));
+  const columns = Math.floor(w / fontSize);
+  const drops = Array(columns).fill(1);
+  const chars = '01';
+
+  function draw(){
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = 'rgba(0,255,153,0.9)';
+    ctx.font = fontSize + 'px monospace';
+    for(let i=0;i<drops.length;i++){
+      const text = chars.charAt(Math.floor(Math.random()*chars.length));
+      ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+      if(drops[i]*fontSize > h && Math.random() > 0.975) drops[i]=0;
+      drops[i]++;
     }
+  }
+  setInterval(draw, 50);
+  window.addEventListener('resize', ()=>{ w = canvas.width = innerWidth; h = canvas.height = innerHeight; });
+})();
 
-    // QRIS Modal
-    function showQRIS(){ document.getElementById('qris-modal').style.display = 'flex'; }
-    function hideQRIS(){ document.getElementById('qris-modal').style.display = 'none'; }
+/* -------------------------
+   Payment interactions
+   ------------------------- */
+const numbers = {
+  dana: '0895402128077',
+  ovo:  '0882008336564',
+  gopay:'0895402128077'
+};
 
-    // Preview gambar
-    function previewImage(event) {
-      const file = event.target.files[0];
-      const preview = document.getElementById('preview');
-      preview.innerHTML = "";
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          preview.appendChild(img);
-        }
-        reader.readAsDataURL(file);
-      }
-    }
+function showMethod(key){
+  const area = document.getElementById('methodDisplay');
+  area.innerHTML = `
+    <div style="padding:12px;border-radius:8px;border:1px solid rgba(0,255,153,0.06);background:linear-gradient(180deg, rgba(0,255,153,0.04), rgba(0,255,153,0.01))">
+      <div style="font-weight:800;margin-bottom:8px">${key.toUpperCase()}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+        <div class="num">${numbers[key]}</div>
+        <button class="btn-ghost" onclick="copyNumber('${numbers[key]}', this)">Copy</button>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:rgba(0,255,153,0.45)">Klik Copy lalu buka aplikasi e-wallet untuk paste nomor</div>
+    </div>`;
+  // smooth scroll into view on small screens
+  area.scrollIntoView({behavior:'smooth',block:'center'});
+}
 
-    // Kirim ke WhatsApp
-    function kirimWA() {
-      let file = document.getElementById('bukti').files[0];
-      let nomorTujuan = "62895402128077"; // ganti dengan nomor WA admin
-      let pesan = "Halo Admin, saya sudah melakukan transfer. Berikut bukti transfernya.";
+function copyNumber(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('Nomor disalin: ' + text);
+    const old = btn.innerText; btn.innerText = 'Copied!';
+    setTimeout(()=> btn.innerText = old, 1200);
+  }).catch(()=> alert('Gagal menyalin — izinkan akses clipboard.'));
+}
 
-      if (!file) {
-        window.open(`https://wa.me/${nomorTujuan}?text=${encodeURIComponent(pesan)}`, "_blank");
-      } else {
-        alert("File sudah dipilih & tampil di preview.\nTapi untuk kirim via WhatsApp tetap harus attach manual 🙏");
-        window.open(`https://wa.me/${nomorTujuan}?text=${encodeURIComponent(pesan)}`, "_blank");
-      }
-    }
+/* -------------------------
+   Quick confirm (right column)
+   ------------------------- */
+let quickPreviewData = null;
+function handleQuickPreview(e){
+  const file = e.target.files && e.target.files[0];
+  const box = document.getElementById('quickPreviewBox');
+  box.innerHTML = '';
+  quickPreviewData = null;
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ box.innerText='Tipe file bukan gambar'; return; }
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const img = document.createElement('img'); img.src = evt.target.result; img.alt='preview';
+    img.style.cursor='zoom-in'; img.addEventListener('click', ()=> window.open(evt.target.result));
+    box.appendChild(img); quickPreviewData = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-    // Matrix Effect
-    const canvas = document.getElementById("matrix");
-    const ctx = canvas.getContext("2d");
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
-    const letters = "01";
-    const fontSize = 14;
-    const columns = canvas.width / fontSize;
-    const drops = [];
-    for (let x = 0; x < columns; x++) drops[x] = 1;
-    function draw() {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#0f0";
-      ctx.font = fontSize + "px monospace";
-      for (let i = 0; i < drops.length; i++) {
-        const text = letters[Math.floor(Math.random() * letters.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    }
-    setInterval(draw, 35);
-  </script>
+function sendQuickWA(){
+  const nama = (document.getElementById('quickNama').value || '-').trim();
+  const nominalRaw = document.getElementById('quickNominal').value;
+  const nominal = nominalRaw ? Number(nominalRaw).toLocaleString('id-ID') : '-';
+  if(!nama || !nominalRaw){ alert('Isi nama & nominal dulu'); return; }
+
+  const now = new Date();
+  const tanggal = now.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+  const jam = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+
+  // NOTE: replace with your admin number (format: 628xxxxxxxxxx)
+  const ADMIN = '62895402128077';
+
+  let pesan = `Halo admin, saya sudah transfer.%0A%0A👤 Nama: ${encodeURIComponent(nama)}%0A💰 Nominal: Rp ${encodeURIComponent(nominal)}%0A📅 Tanggal: ${encodeURIComponent(tanggal)}%0A⏰ Jam: ${encodeURIComponent(jam)}%0A%0ABukti: (silakan attach manual di WA)`;
+
+  window.open(`https://wa.me/${ADMIN}?text=${pesan}`, '_blank');
+  setTimeout(()=> {
+    if(quickPreviewData) alert('WA terbuka. Silakan attach gambar bukti yang dipilih lalu kirim.');
+  }, 700);
+}
+
+/* -------------------------
+   QRIS modal + confirm
+   ------------------------- */
+function openQris(){ document.getElementById('qrisModal').style.display='flex'; }
+function closeQris(){ document.getElementById('qrisModal').style.display='none'; }
+
+let qrisPreviewData = null;
+function handleQrisPreview(e){
+  const file = e.target.files && e.target.files[0];
+  const box = document.getElementById('qrisPreviewBox');
+  box.innerHTML = ''; qrisPreviewData = null;
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ box.innerText='Tipe file bukan gambar'; return; }
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const img = document.createElement('img'); img.src = evt.target.result; img.alt='preview';
+    img.style.cursor='zoom-in'; img.addEventListener('click', ()=> window.open(evt.target.result));
+    box.appendChild(img); qrisPreviewData = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmQris(){
+  const nama = (document.getElementById('nameQ').value || '-').trim();
+  const nom = document.getElementById('nominalQ').value;
+  if(!nama || !nom){ alert('Isi nama & nominal terlebih dahulu!'); return; }
+  const nominal = Number(nom).toLocaleString('id-ID');
+
+  const now = new Date();
+  const tanggal = now.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+  const jam = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+
+  // NOTE: ganti NOMOR_WA_ADMIN di sini (format 62...)
+  const ADMIN = '62895402128077';
+
+  let pesan = `Halo admin, saya sudah transfer via QRIS.%0A%0A👤 Nama: ${encodeURIComponent(nama)}%0A💰 Nominal: Rp ${encodeURIComponent(nominal)}%0A📅 Tanggal: ${encodeURIComponent(tanggal)}%0A⏰ Jam: ${encodeURIComponent(jam)}%0A%0ABukti: (silakan attach manual di WA)`;
+
+  window.open(`https://wa.me/${ADMIN}?text=${pesan}`, '_blank');
+
+  setTimeout(()=> {
+    if(qrisPreviewData) alert('WA terbuka. Silakan attach gambar bukti yang sudah diunggah lalu kirim.');
+  }, 700);
+}
+
+/* -------------------------
+   small toast helper
+   ------------------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerText = msg; t.style.display = 'block';
+  setTimeout(()=> t.style.display='none', 1800);
+}
+</script>
 </body>
 </html>
