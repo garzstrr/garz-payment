@@ -5,41 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ Garz All Payment ⚡</title>
   <style>
-    /* Reset */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: "Courier New", monospace;
       background: #000;
       color: #00ff99;
       text-align: center;
       padding: 30px;
-      overflow-x: hidden; /* biar bisa scroll ke bawah */
+      overflow-x: hidden;
     }
-
     html { scroll-behavior: smooth; }
-
-    /* Canvas matrix background */
     canvas {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: -3;
     }
-
-    /* Container utama */
-    .container {
-      max-width: 500px;
-      margin: auto;
-    }
-
+    .container { max-width: 500px; margin: auto; }
     h1 {
       font-size: 28px;
       margin-bottom: 25px;
       text-shadow: 0 0 15px #00ff99, 0 0 30px #00ffcc;
     }
-
-    /* Kotak style neon */
     .box {
       border: 2px solid #00ff99;
       border-radius: 12px;
@@ -48,13 +35,11 @@
       box-shadow: 0 0 20px #00ff99;
       background: rgba(0, 0, 0, 0.6);
     }
-
-    /* Tombol payment */
     .payment-option {
       display: flex;
-      align-items: center;      /* rata vertikal */
-      justify-content: center;  /* rata horizontal */
-      gap: 10px;                /* jarak ikon-teks */
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       background: #00ff99;
       color: #000;
       font-weight: bold;
@@ -64,17 +49,82 @@
       border-radius: 12px;
       cursor: pointer;
       transition: 0.3s;
+      text-decoration: none;
     }
-
     .payment-option:hover {
       background: #00cc77;
       transform: scale(1.05);
     }
+    .number { font-size: 14px; color: #000; }
+    .copy-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #000;
+      color: #00ff99;
+    }
+    .copy-btn:hover { background: #222; }
 
-    /* Info & footer */
-    p {
-      margin: 10px 0;
-      line-height: 1.5;
+    /* Upload Bukti */
+    .upload-section {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .upload-section input {
+      padding: 8px;
+      border: 1px solid #00ff99;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #111;
+      color: #00ff99;
+    }
+    .upload-section button {
+      background: #00ff99;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .upload-section button:hover {
+      background: #00cc77;
+    }
+    .preview {
+      margin-top: 15px;
+    }
+    .preview img {
+      max-width: 250px;
+      border-radius: 10px;
+      border: 2px solid #00ff99;
+      box-shadow: 0 0 15px #00ff99;
+    }
+
+    /* Modal QRIS */
+    #qris-modal {
+      display: none;
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.9);
+      justify-content:center;
+      align-items:center;
+      z-index:999;
+    }
+    #qris-modal img {
+      width: 250px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px #00ff99;
+    }
+    #qris-modal button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #00ff99;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -85,63 +135,110 @@
     <h1>⚡ Garz All Payment ⚡</h1>
 
     <div class="box">
-      <div class="payment-option">💰 DANA</div>
-      <div class="payment-option">📱 OVO</div>
-      <div class="payment-option">⚡ GOPAY</div>
-      <div class="payment-option">🔗 QRIS</div>
+      <div class="payment-option">
+        💰 DANA 
+        <span class="number" id="dana-number">0895402128077</span>
+        <button class="copy-btn" onclick="copyNumber('dana-number')">Copy</button>
+      </div>
+      <div class="payment-option">
+        📱 OVO 
+        <span class="number" id="ovo-number">0882008336564</span>
+        <button class="copy-btn" onclick="copyNumber('ovo-number')">Copy</button>
+      </div>
+      <div class="payment-option">
+        ⚡ GOPAY 
+        <span class="number" id="gopay-number">0895402128077</span>
+        <button class="copy-btn" onclick="copyNumber('gopay-number')">Copy</button>
+      </div>
+      <div class="payment-option" onclick="showQRIS()">
+        🔗 QRIS (klik untuk lihat)
+      </div>
     </div>
 
-    <div class="box">
-      <p>Website ini mendukung semua metode pembayaran digital populer.<br>
-      Scroll ke bawah untuk info lebih lanjut.</p>
+    <!-- Upload Bukti Transfer -->
+    <div class="box upload-section">
+      <h2>Upload Bukti Transfer</h2>
+      <input type="file" id="bukti" accept="image/*" onchange="previewImage(event)"><br>
+      <div class="preview" id="preview"></div>
+      <button onclick="kirimWA()">Kirim via WhatsApp</button>
     </div>
+  </div>
 
-    <div class="box">
-      <h2>Tentang Garz</h2>
-      <p>Garz All Payment adalah layanan all-in-one untuk mempermudah transaksi digital dengan cepat dan aman.</p>
+  <!-- QRIS Modal -->
+  <div id="qris-modal">
+    <div style="text-align:center;">
+      <h3 style="color:#00ff99;">Scan QRIS</h3>
+      <img src="https://files.catbox.moe/0gr906.jpg" id="qris-img"/>
+      <br/>
+      <button onclick="hideQRIS()">Tutup</button>
     </div>
   </div>
 
   <script>
-    // Matrix effect
+    // Copy Nomor
+    function copyNumber(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text);
+      alert("Nomor berhasil disalin: " + text);
+    }
+
+    // QRIS Modal
+    function showQRIS(){ document.getElementById('qris-modal').style.display = 'flex'; }
+    function hideQRIS(){ document.getElementById('qris-modal').style.display = 'none'; }
+
+    // Preview gambar
+    function previewImage(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('preview');
+      preview.innerHTML = "";
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          preview.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Kirim ke WhatsApp
+    function kirimWA() {
+      let file = document.getElementById('bukti').files[0];
+      let nomorTujuan = "62895402128077"; // ganti dengan nomor WA admin
+      let pesan = "Halo Admin, saya sudah melakukan transfer. Berikut bukti transfernya.";
+
+      if (!file) {
+        window.open(`https://wa.me/${nomorTujuan}?text=${encodeURIComponent(pesan)}`, "_blank");
+      } else {
+        alert("File sudah dipilih & tampil di preview.\nTapi untuk kirim via WhatsApp tetap harus attach manual 🙏");
+        window.open(`https://wa.me/${nomorTujuan}?text=${encodeURIComponent(pesan)}`, "_blank");
+      }
+    }
+
+    // Matrix Effect
     const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
-
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-
     const letters = "01";
     const fontSize = 14;
     const columns = canvas.width / fontSize;
     const drops = [];
-
     for (let x = 0; x < columns; x++) drops[x] = 1;
-
     function draw() {
       ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "#0f0";
       ctx.font = fontSize + "px monospace";
-
       for (let i = 0; i < drops.length; i++) {
         const text = letters[Math.floor(Math.random() * letters.length)];
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
-          drops[i] = 0;
-
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
         drops[i]++;
       }
     }
-
     setInterval(draw, 35);
-
-    // Resize responsive
-    window.addEventListener("resize", () => {
-      canvas.height = window.innerHeight;
-      canvas.width = window.innerWidth;
-    });
   </script>
 </body>
 </html>
